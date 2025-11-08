@@ -17,6 +17,11 @@ const operationsList = document.getElementById("operations");
 const statusEl = document.getElementById("status");
 const editorTitle = document.getElementById("editor-title");
 const previewToggle = document.getElementById("preview-toggle");
+const trimFirstButton = document.getElementById("trim-first");
+const trimLastButton = document.getElementById("trim-last");
+const trimRangeButton = document.getElementById("trim-range");
+const splitClipButton = document.getElementById("split-clip");
+const quickButtons = [trimFirstButton, trimLastButton, trimRangeButton, splitClipButton];
 
 async function fetchJSON(url, options = {}) {
   const response = await fetch(url, options);
@@ -78,6 +83,9 @@ function setEditorEnabled(project) {
   refreshButton.disabled = !hasProject || !project?.preview_url;
   exportMp4Button.disabled = !hasProject;
   exportMovButton.disabled = !hasProject;
+  quickButtons.forEach((button) => {
+    button.disabled = !hasProject || busy;
+  });
 }
 
 async function refreshProjects(selectLatest = false) {
@@ -154,23 +162,22 @@ async function handleUpload(event) {
   }
 }
 
-async function applyInstruction() {
+async function sendInstructionPrompt(prompt, preview) {
   if (!state.selectedId) {
+    setStatus("Select a project first.");
     return;
   }
-  const prompt = instructionInput.value.trim();
-  if (!prompt) {
-    setStatus("Enter an instruction to apply.");
-    return;
-  }
+  const payload = {
+    prompt,
+    preview: typeof preview === "boolean" ? preview : previewToggle.checked,
+  };
   setStatus("Submitting instruction...");
   try {
     const response = await fetchJSON(`/api/projects/${state.selectedId}/instructions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, preview: previewToggle.checked }),
+      body: JSON.stringify(payload),
     });
-    instructionInput.value = "";
     setStatus("Processing instruction...");
     if (response.job?.job_id) {
       pollJob(response.job.job_id, state.selectedId);
@@ -181,6 +188,20 @@ async function applyInstruction() {
   } catch (err) {
     setStatus(err.message);
   }
+}
+
+async function applyInstruction() {
+  if (!state.selectedId) {
+    setStatus("Select a project first.");
+    return;
+  }
+  const prompt = instructionInput.value.trim();
+  if (!prompt) {
+    setStatus("Enter an instruction to apply.");
+    return;
+  }
+  instructionInput.value = "";
+  await sendInstructionPrompt(prompt, previewToggle.checked);
 }
 
 function pollJob(jobId, projectId) {
@@ -246,10 +267,57 @@ async function exportProject(format) {
   }
 }
 
+function promptSeconds(message) {
+  const input = window.prompt(message);
+  if (input === null) {
+    return null;
+  }
+  const value = Number.parseFloat(input.trim());
+  if (Number.isNaN(value) || value <= 0) {
+    setStatus("Enter a positive number of seconds.");
+    return null;
+  }
+  return value;
+}
+
+async function handleTrimFirst() {
+  const seconds = promptSeconds("Keep the first how many seconds?");
+  if (seconds === null) return;
+  await sendInstructionPrompt(`Trim the video to first ${seconds} seconds.`, previewToggle.checked);
+}
+
+async function handleTrimLast() {
+  const seconds = promptSeconds("Keep the last how many seconds?");
+  if (seconds === null) return;
+  await sendInstructionPrompt(`Trim the video to last ${seconds} seconds.`, previewToggle.checked);
+}
+
+async function handleTrimRange() {
+  const start = promptSeconds("Trim range start (seconds)");
+  if (start === null) return;
+  const end = promptSeconds("Trim range end (seconds)");
+  if (end === null) return;
+  if (start === end) {
+    setStatus("Start and end must be different.");
+    return;
+  }
+  await sendInstructionPrompt(`Trim between ${start} and ${end} seconds.`, previewToggle.checked);
+}
+
+async function handleSplitClip() {
+  const seconds = promptSeconds("Split the clip at which second?");
+  if (seconds === null) return;
+  await sendInstructionPrompt(`Split the clip at ${seconds} seconds.`, previewToggle.checked);
+}
+
 uploadForm.addEventListener("submit", handleUpload);
 applyButton.addEventListener("click", applyInstruction);
 refreshButton.addEventListener("click", refreshPreview);
 exportMp4Button.addEventListener("click", () => exportProject("mp4"));
 exportMovButton.addEventListener("click", () => exportProject("mov"));
+trimFirstButton.addEventListener("click", handleTrimFirst);
+trimLastButton.addEventListener("click", handleTrimLast);
+trimRangeButton.addEventListener("click", handleTrimRange);
+splitClipButton.addEventListener("click", handleSplitClip);
 
 refreshProjects();

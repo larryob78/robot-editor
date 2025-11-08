@@ -108,7 +108,9 @@ def parse_instructions(prompt: str, clip_duration: Optional[float]) -> List[Oper
     duration = clip_duration or 0
 
     # Trim instructions --------------------------------------------------------
-    trim_pattern = re.compile(r"trim (?:the )?(?:video )?(?:to|at) (?:(first|last) )?(\d+)(?:\s*(seconds|secs|s))")
+    trim_pattern = re.compile(
+        r"trim (?:the )?(?:video )?(?:to|at) (?:(first|last) )?(\d+(?:\.\d+)?)(?:\s*(seconds|secs|s))"
+    )
     match = trim_pattern.search(prompt_normalized)
     if match:
         position, value, _ = match.groups()
@@ -131,6 +133,24 @@ def parse_instructions(prompt: str, clip_duration: Optional[float]) -> List[Oper
                     params={"start": 0.0, "end": end_time},
                 )
             )
+
+    trim_between_pattern = re.compile(
+        r"trim (?:between|from) (\d+(?:\.\d+)?) (?:and|to) (\d+(?:\.\d+)?)(?:\s*(seconds|secs|s))"
+    )
+    match = trim_between_pattern.search(prompt_normalized)
+    if match:
+        start_value, end_value, _ = match.groups()
+        start_time = float(start_value)
+        end_time = float(end_value)
+        if end_time < start_time:
+            start_time, end_time = end_time, start_time
+        operations.append(
+            Operation(
+                type="subclip",
+                description=f"Trim video between {start_time:.1f}s and {end_time:.1f}s",
+                params={"start": start_time, "end": end_time},
+            )
+        )
 
     # Cut out silence or dead air
     if "remove silence" in prompt_normalized or "remove dead air" in prompt_normalized:
@@ -193,6 +213,21 @@ def parse_instructions(prompt: str, clip_duration: Optional[float]) -> List[Oper
                 type="highlight",
                 description=f"Highlight segment {segment_index}",
                 params={"start": start, "end": end},
+            )
+        )
+
+    split_pattern = re.compile(
+        r"split (?:the )?(?:clip|video) at (\d+(?:\.\d+)?)(?:\s*(seconds|secs|s))"
+    )
+    match = split_pattern.search(prompt_normalized)
+    if match:
+        (time_value, _,) = match.groups()
+        split_time = float(time_value)
+        operations.append(
+            Operation(
+                type="split",
+                description=f"Split clip at {split_time:.1f}s",
+                params={"time": split_time},
             )
         )
 

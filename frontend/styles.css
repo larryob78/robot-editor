@@ -146,6 +146,31 @@ button:not([disabled]):hover {
   flex-wrap: wrap;
 }
 
+.quick-actions {
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quick-actions h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quick-grid button {
+  flex: 1 1 140px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(109, 93, 252, 0.9), rgba(70, 193, 255, 0.9));
+}
+
 .inline {
   display: flex;
   align-items: center;

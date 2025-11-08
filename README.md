@@ -8,6 +8,7 @@ LuminaCut AI is an autonomous, natural-language-driven video editing environment
 - **Format-agnostic ingest & export** – accepts any browser-supported video upload and returns the untouched source as MP4 or MOV exports.
 - **Instant preview refresh** – previews mirror the current clip and are regenerated after each instruction for rapid feedback.
 - **Operation timeline** – transparent list of every AI-authored transformation with human-friendly descriptions.
+- **Classic quick tools** – dedicated buttons for trimming the head or tail, isolating a range, or splitting at a timecode.
 - **Zero-install dependencies** – everything runs on the Python standard library, making it ideal for offline or firewalled environments.
 
 ## Project structure
