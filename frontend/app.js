@@ -89,16 +89,20 @@ function setEditorEnabled(project) {
 }
 
 async function refreshProjects(selectLatest = false) {
-  const data = await fetchJSON("/api/projects");
-  state.projects = data.projects;
-  renderProjects();
-  if (selectLatest && state.projects.length) {
-    selectProject(state.projects[state.projects.length - 1].id);
-  } else if (state.selectedId) {
-    const existing = state.projects.find((p) => p.id === state.selectedId);
-    if (existing) {
-      updateEditor(existing);
+  try {
+    const data = await fetchJSON("/api/projects");
+    state.projects = data.projects;
+    renderProjects();
+    if (selectLatest && state.projects.length) {
+      await selectProject(state.projects[state.projects.length - 1].id);
+    } else if (state.selectedId) {
+      const existing = state.projects.find((p) => p.id === state.selectedId);
+      if (existing) {
+        updateEditor(existing);
+      }
     }
+  } catch (err) {
+    setStatus(err.message || "Unable to load projects.");
   }
 }
 
@@ -130,15 +134,20 @@ function updateEditor(project) {
 }
 
 async function selectProject(projectId) {
+  stopPolling();
   state.selectedId = projectId;
   renderProjects();
-  const data = await fetchJSON(`/api/projects/${projectId}`);
-  const index = state.projects.findIndex((p) => p.id === projectId);
-  if (index !== -1) {
-    state.projects[index] = data.project;
-    renderProjects();
+  try {
+    const data = await fetchJSON(`/api/projects/${projectId}`);
+    const index = state.projects.findIndex((p) => p.id === projectId);
+    if (index !== -1) {
+      state.projects[index] = data.project;
+      renderProjects();
+    }
+    updateEditor(data.project);
+  } catch (err) {
+    setStatus(err.message || "Unable to load project details.");
   }
-  updateEditor(data.project);
 }
 
 async function handleUpload(event) {

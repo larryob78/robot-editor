@@ -40,19 +40,19 @@
           <div>
             <video id="preview" controls class="preview" preload="metadata"></video>
             <div class="toolbar">
-              <button id="refresh-preview" disabled>Refresh preview</button>
-              <button id="export-mp4" disabled>Export MP4</button>
-              <button id="export-mov" disabled>Export MOV</button>
+              <button id="refresh-preview" type="button" disabled>Refresh preview</button>
+              <button id="export-mp4" type="button" disabled>Export MP4</button>
+              <button id="export-mov" type="button" disabled>Export MOV</button>
             </div>
           </div>
           <div>
             <section class="quick-actions">
               <h3>Classic edits</h3>
               <div class="quick-grid">
-                <button id="trim-first" disabled>Trim to first…</button>
-                <button id="trim-last" disabled>Trim to last…</button>
-                <button id="trim-range" disabled>Trim range…</button>
-                <button id="split-clip" disabled>Split clip…</button>
+                <button id="trim-first" type="button" disabled>Trim to first…</button>
+                <button id="trim-last" type="button" disabled>Trim to last…</button>
+                <button id="trim-range" type="button" disabled>Trim range…</button>
+                <button id="split-clip" type="button" disabled>Split clip…</button>
               </div>
             </section>
             <label class="field">
@@ -63,7 +63,7 @@
               <input type="checkbox" id="preview-toggle" checked />
               <span>Generate preview after applying instruction</span>
             </label>
-            <button id="apply-instruction" disabled>Apply instruction</button>
+            <button id="apply-instruction" type="button" disabled>Apply instruction</button>
             <div id="status" class="status"></div>
             <h3>Operation history</h3>
             <ul id="operations" class="operations"></ul>
@@ -74,7 +74,7 @@
 
     <template id="project-item-template">
       <li class="project">
-        <button data-action="select"></button>
+        <button data-action="select" type="button"></button>
         <span class="status-pill"></span>
       </li>
     </template>
