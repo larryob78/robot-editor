@@ -1,0 +1,87 @@
+.instruction-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.instruction-panel header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.instruction-panel header p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+}
+
+.instruction-panel textarea {
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  padding: 1rem;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 6rem;
+}
+
+.instruction-panel textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+}
+
+.instruction-panel__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.instruction-panel__toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #475569;
+}
+
+.instruction-panel__toolbar button {
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #22d3ee);
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.instruction-panel__toolbar button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.instruction-panel__suggestions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.instruction-panel__suggestions button {
+  border: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.1);
+  color: #4338ca;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.instruction-panel__suggestions button:hover {
+  background: rgba(79, 70, 229, 0.18);
+}

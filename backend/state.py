@@ -1,0 +1,108 @@
+"""Application state management for video editing projects."""
+
+from __future__ import annotations
+
+import threading
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from moviepy.editor import VideoFileClip
+
+from models import ExportRequest, InstructionRequest
+from video_processing import VideoProject, parse_instructions, save_metadata
+
+
+def _duration(path: Path) -> Optional[float]:
+    if not path.exists():
+        return None
+    clip = VideoFileClip(str(path))
+    try:
+        return clip.duration
+    finally:
+        clip.close()
+
+
+class ProjectManager:
+    """In-memory registry of projects and asynchronous job manager."""
+
+    def __init__(self, base_dir: Path):
+        self.base_dir = base_dir
+        self.projects: Dict[str, VideoProject] = {}
+        self.jobs: Dict[str, Dict[str, str]] = {}
+        self.executor = ThreadPoolExecutor(max_workers=2)
+        self.lock = threading.Lock()
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+
+    # ------------------------------------------------------------------
+    def create_project(self, name: str, source_path: Path) -> VideoProject:
+        project_id = uuid.uuid4().hex
+        project_dir = self.base_dir / project_id
+        project = VideoProject(project_id, name, project_dir, source_path)
+        with self.lock:
+            self.projects[project_id] = project
+            save_metadata(project)
+        return project
+
+    def list_projects(self) -> List[VideoProject]:
+        with self.lock:
+            return list(self.projects.values())
+
+    def get_project(self, project_id: str) -> Optional[VideoProject]:
+        with self.lock:
+            return self.projects.get(project_id)
+
+    # ------------------------------------------------------------------
+    def submit_instruction(self, project_id: str, request: InstructionRequest) -> Dict[str, str]:
+        project = self.get_project(project_id)
+        if not project:
+            raise KeyError(project_id)
+
+        job_id = uuid.uuid4().hex
+        with self.lock:
+            self.jobs[job_id] = {"status": "queued", "prompt": request.prompt, "error": None}
+            project.status = "queued"
+
+        clip_duration = _duration(project.current_path)
+
+        def task() -> None:
+            with self.lock:
+                self.jobs[job_id]["status"] = "processing"
+                project.status = "processing"
+            try:
+                operations = parse_instructions(request.prompt, clip_duration)
+                project.apply_operations(operations, generate_preview=request.preview)
+                with self.lock:
+                    project.status = "ready"
+                    self.jobs[job_id]["status"] = "completed"
+                    save_metadata(project)
+            except Exception as exc:  # pragma: no cover - defensive branch
+                with self.lock:
+                    project.status = "error"
+                    self.jobs[job_id]["status"] = "failed"
+                    self.jobs[job_id]["error"] = str(exc)
+
+        self.executor.submit(task)
+        return {"job_id": job_id}
+
+    def job_status(self, job_id: str) -> Dict[str, Optional[str]]:
+        with self.lock:
+            return self.jobs.get(job_id, {"status": "unknown", "error": "Job not found"})
+
+    def export_project(self, project_id: str, request: ExportRequest) -> Path:
+        project = self.get_project(project_id)
+        if not project:
+            raise KeyError(project_id)
+        export_dir = project.storage_dir / "exports"
+        export_dir.mkdir(parents=True, exist_ok=True)
+        file_name = f"{project.name.replace(' ', '_')}.{request.format}"
+        target_path = export_dir / file_name
+        project.export(target_path, request.format)
+        save_metadata(project)
+        return target_path
+
+
+# Shared singleton used by the FastAPI application
+PROJECT_DATA_DIR = Path(__file__).resolve().parent / "data" / "projects"
+manager = ProjectManager(PROJECT_DATA_DIR)
