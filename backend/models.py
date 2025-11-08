@@ -1,36 +1,53 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field
+"""Lightweight request/response models used by the backend server."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Dict, List
 
 
-class OperationModel(BaseModel):
+@dataclass
+class OperationModel:
     """Serialized representation of a video editing operation."""
 
     type: str
     description: str
-    params: dict
+    params: Dict[str, Any] = field(default_factory=dict)
 
 
-class ProjectModel(BaseModel):
+@dataclass
+class ProjectModel:
     id: str
     name: str
     original_path: str
     current_path: str
-    preview_path: Optional[str]
+    preview_path: str | None
     status: str
-    operations: List[OperationModel] = Field(default_factory=list)
+    operations: List[OperationModel] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-class InstructionRequest(BaseModel):
-    prompt: str = Field(..., description="Natural language instruction for the AI editor")
-    preview: bool = Field(
-        True,
-        description="Whether to generate an optimized preview clip after the instruction is applied.",
-    )
+@dataclass
+class InstructionRequest:
+    prompt: str
+    preview: bool = True
+
+    @classmethod
+    def from_json(cls, data: Dict[str, Any]) -> "InstructionRequest":
+        prompt = str(data.get("prompt", "")).strip()
+        preview = bool(data.get("preview", True))
+        if not prompt:
+            raise ValueError("Instruction prompt cannot be empty")
+        return cls(prompt=prompt, preview=preview)
 
 
-class ExportRequest(BaseModel):
-    format: str = Field(
-        "mp4",
-        regex="^(mp4|mov)$",
-        description="Desired output format for the exported video.",
-    )
+@dataclass
+class ExportRequest:
+    format: str = "mp4"
+
+    @classmethod
+    def from_json(cls, data: Dict[str, Any]) -> "ExportRequest":
+        fmt = str(data.get("format", "mp4")).lower()
+        if fmt not in {"mp4", "mov"}:
+            raise ValueError("format must be either 'mp4' or 'mov'")
+        return cls(format=fmt)

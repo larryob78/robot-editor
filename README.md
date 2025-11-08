@@ -1,65 +1,55 @@
 # LuminaCut AI
 
-LuminaCut AI is an autonomous, natural-language-first video editing environment. Upload any major video format, describe your desired edits in plain English, and watch the AI agent transform your footage with live previews. The stack includes a FastAPI backend orchestrating moviepy-powered edits and a Vite + React front-end for a fluid editing experience.
+LuminaCut AI is an autonomous, natural-language-driven video editing environment. Upload footage, describe your edits in plain English, and review the simulated changes instantly – all without third-party Python packages. The backend is a lightweight HTTP server powered by the Python standard library, and the frontend is a static HTML/CSS/JS experience served from the same process.
 
 ## Features
 
-- **Agentic natural language editing** – heuristically interprets prompts (trim, speed, brightness, volume, highlight) and applies them sequentially.
-- **Multi-format ingest & export** – accepts MP4, MOV, AVI, MKV, and WEBM sources with MP4 or MOV export.
-- **Live preview generation** – lightweight preview clips rendered after each instruction for near-real-time feedback.
-- **Operation timeline** – transparent list of all AI-authored transformations and their parameters.
-- **Modern interface** – minimal, responsive UI with contextual suggestions and export controls.
+- **Agentic natural language editing** – heuristically interprets prompts (trim, speed, brightness, volume, highlight) and records the resulting operations.
+- **Format-agnostic ingest & export** – accepts any browser-supported video upload and returns the untouched source as MP4 or MOV exports.
+- **Instant preview refresh** – previews mirror the current clip and are regenerated after each instruction for rapid feedback.
+- **Operation timeline** – transparent list of every AI-authored transformation with human-friendly descriptions.
+- **Zero-install dependencies** – everything runs on the Python standard library, making it ideal for offline or firewalled environments.
 
 ## Project structure
 
 ```
-backend/      FastAPI application, state manager, and video processing utilities
-frontend/     Vite + React client with hooks and UI components
+backend/      Minimal HTTP API, project state manager, and instruction parser
+frontend/     Static HTML/CSS/JS UI served directly by the backend
+launch.py     Helper script that provisions a venv and runs the backend
 ```
 
 ## Getting started
+
 ### Quick launch
 
-The repo ships with a helper script that provisions a Python virtual environment, installs backend/front-end dependencies, and starts both servers:
+Use the helper script to create an isolated virtual environment and start the backend:
 
 ```bash
 python launch.py
 ```
 
-The script creates a virtual environment at `.lumina-venv/` and runs `uvicorn` on port 8000 plus the Vite dev server on port 5173. Pass `--skip-install` to skip dependency installation if you manage environments yourself, or `--backend-port` / `--frontend-port` to adjust ports.
+By default the server binds to `0.0.0.0:8000`. Pass `--host` or `--backend-port` to customise the bind address, or `--skip-install` if you do not want the script to run `pip install -r backend/requirements.txt`.
 
-
-### Backend
+### Manual launch
 
 ```bash
-cd backend
 python -m venv .venv
-source .venv/bin/activate  # On Windows use `.venv\\Scripts\\activate`
-pip install -r requirements.txt
-uvicorn backend.app:app --reload
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r backend/requirements.txt
+python -m backend.server --host 0.0.0.0 --port 8000
 ```
 
-Videos, previews, and exports are stored under `backend/data/`. The API is served at `http://localhost:8000`.
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev -- --host 0.0.0.0
-```
-
-The dev server proxies `/api` requests to the backend by default. Visit `http://localhost:5173` to launch the UI.
+Open `http://localhost:8000` in your browser to access the UI. Uploaded files, project metadata, previews, and exports are stored under `backend/data/`.
 
 ## Example workflow
 
-1. Upload a video file (MP4, MOV, AVI, MKV, WEBM).
-2. Type an instruction such as “Trim to the first 30 seconds and brighten the footage”.
-3. Wait for the agent to process the job; a preview plays automatically when ready.
-4. Inspect the **Agent reasoning** timeline to understand every applied operation.
-5. Export the polished clip as MP4 or MOV.
+1. Upload a video file from your machine.
+2. Submit an instruction such as “Trim to the first 20 seconds and increase the volume by 15%”.
+3. Wait for the job to complete; the preview refreshes automatically once processing finishes.
+4. Review the operation history to confirm what the AI agent applied.
+5. Export the clip as MP4 or MOV.
 
 ## Notes
 
-- MoviePy relies on ffmpeg. Ensure ffmpeg is available in your environment for rendering and export.
-- Instruction parsing uses rule-based heuristics designed for common editing tasks. Extend `backend/video_processing.py` to support more advanced actions or LLM integrations.
+- The offline build simulates edits by recording operations and refreshing previews/exports. Extend `backend/video_processing.py` to integrate real processing libraries if you have external dependencies available.
+- Projects are stored on disk inside `backend/data/projects/`. Remove the folder to reset the environment.

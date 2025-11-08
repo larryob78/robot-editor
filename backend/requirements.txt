@@ -1,7 +1,1 @@
-fastapi
-uvicorn
-python-multipart
-moviepy
-opencv-python
-numpy
-pydantic
+# LuminaCut backend relies solely on Python's standard library in this build.

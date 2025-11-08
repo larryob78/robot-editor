@@ -8,20 +8,20 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from moviepy.editor import VideoFileClip
-
 from .models import ExportRequest, InstructionRequest
 from .video_processing import VideoProject, parse_instructions, save_metadata
 
 
-def _duration(path: Path) -> Optional[float]:
-    if not path.exists():
-        return None
-    clip = VideoFileClip(str(path))
-    try:
-        return clip.duration
-    finally:
-        clip.close()
+def _duration(_path: Path) -> Optional[float]:
+    """Return a cached duration if available.
+
+    Real media inspection would normally read metadata via a video library, but
+    in this offline-friendly build we simply return ``None``. The instruction
+    parser gracefully handles the ``None`` case by using prompts without timing
+    hints.
+    """
+
+    return None
 
 
 class ProjectManager:
@@ -30,7 +30,7 @@ class ProjectManager:
     def __init__(self, base_dir: Path):
         self.base_dir = base_dir
         self.projects: Dict[str, VideoProject] = {}
-        self.jobs: Dict[str, Dict[str, str]] = {}
+        self.jobs: Dict[str, Dict[str, Optional[str]]] = {}
         self.executor = ThreadPoolExecutor(max_workers=2)
         self.lock = threading.Lock()
         self.base_dir.mkdir(parents=True, exist_ok=True)
@@ -68,20 +68,27 @@ class ProjectManager:
 
         def task() -> None:
             with self.lock:
-                self.jobs[job_id]["status"] = "processing"
+                job = self.jobs.get(job_id)
+                if job:
+                    job["status"] = "processing"
                 project.status = "processing"
             try:
                 operations = parse_instructions(request.prompt, clip_duration)
                 project.apply_operations(operations, generate_preview=request.preview)
                 with self.lock:
                     project.status = "ready"
-                    self.jobs[job_id]["status"] = "completed"
+                    job = self.jobs.get(job_id)
+                    if job:
+                        job["status"] = "completed"
+                        job["error"] = None
                     save_metadata(project)
             except Exception as exc:  # pragma: no cover - defensive branch
                 with self.lock:
                     project.status = "error"
-                    self.jobs[job_id]["status"] = "failed"
-                    self.jobs[job_id]["error"] = str(exc)
+                    job = self.jobs.get(job_id)
+                    if job:
+                        job["status"] = "failed"
+                        job["error"] = str(exc)
 
         self.executor.submit(task)
         return {"job_id": job_id}
@@ -103,6 +110,7 @@ class ProjectManager:
         return target_path
 
 
-# Shared singleton used by the FastAPI application
+# Shared singleton used by the application
 PROJECT_DATA_DIR = Path(__file__).resolve().parent / "data" / "projects"
+PROJECT_DATA_DIR.mkdir(parents=True, exist_ok=True)
 manager = ProjectManager(PROJECT_DATA_DIR)
