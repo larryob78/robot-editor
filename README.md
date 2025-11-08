@@ -18,6 +18,16 @@ frontend/     Vite + React client with hooks and UI components
 ```
 
 ## Getting started
+### Quick launch
+
+The repo ships with a helper script that provisions a Python virtual environment, installs backend/front-end dependencies, and starts both servers:
+
+```bash
+python launch.py
+```
+
+The script creates a virtual environment at `.lumina-venv/` and runs `uvicorn` on port 8000 plus the Vite dev server on port 5173. Pass `--skip-install` to skip dependency installation if you manage environments yourself, or `--backend-port` / `--frontend-port` to adjust ports.
+
 
 ### Backend
 
@@ -36,7 +46,7 @@ Videos, previews, and exports are stored under `backend/data/`. The API is serve
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 0.0.0.0
 ```
 
 The dev server proxies `/api` requests to the backend by default. Visit `http://localhost:5173` to launch the UI.
