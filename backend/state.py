@@ -10,8 +10,8 @@ from typing import Dict, List, Optional
 
 from moviepy.editor import VideoFileClip
 
-from models import ExportRequest, InstructionRequest
-from video_processing import VideoProject, parse_instructions, save_metadata
+from .models import ExportRequest, InstructionRequest
+from .video_processing import VideoProject, parse_instructions, save_metadata
 
 
 def _duration(path: Path) -> Optional[float]:

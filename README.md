@@ -26,7 +26,7 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate  # On Windows use `.venv\\Scripts\\activate`
 pip install -r requirements.txt
-uvicorn app:app --reload
+uvicorn backend.app:app --reload
 ```
 
 Videos, previews, and exports are stored under `backend/data/`. The API is served at `http://localhost:8000`.
