@@ -133,10 +133,14 @@ def clear_slack() -> None:
     _last_status["last_tested"] = None
 
 
-def notify_slack_async(message: str) -> None:
+def notify_slack_async(*parts: str) -> None:
+    """Post a message to Slack on a background thread if configured."""
+
     webhook, _ = _load_webhook()
     if not webhook:
         return
+
+    message = "".join(parts)
 
     def _worker() -> None:
         success, error_message = _send_slack_message(webhook, message)
