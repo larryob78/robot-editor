@@ -216,13 +216,17 @@ class LuminaCutHandler(BaseHTTPRequestHandler):
             if ctype != "multipart/form-data":
                 self.send_error(HTTPStatus.BAD_REQUEST, "Expected multipart form")
                 return
+            environ = {
+                "REQUEST_METHOD": "POST",
+                "CONTENT_TYPE": self.headers.get("Content-Type", ""),
+            }
+            content_length = self.headers.get("Content-Length")
+            if content_length:
+                environ["CONTENT_LENGTH"] = content_length
             form = cgi.FieldStorage(  # type: ignore[arg-type]
                 fp=self.rfile,
                 headers=self.headers,
-                environ={
-                    "REQUEST_METHOD": "POST",
-                    "CONTENT_TYPE": self.headers.get("Content-Type", ""),
-                },
+                environ=environ,
             )
             upload = form["file"] if "file" in form else None
             if not upload or not getattr(upload, "file", None):
