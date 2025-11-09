@@ -22,6 +22,10 @@ const trimLastButton = document.getElementById("trim-last");
 const trimRangeButton = document.getElementById("trim-range");
 const splitClipButton = document.getElementById("split-clip");
 const quickButtons = [trimFirstButton, trimLastButton, trimRangeButton, splitClipButton];
+const slackForm = document.getElementById("slack-form");
+const slackInput = document.getElementById("slack-webhook");
+const slackDisconnectButton = document.getElementById("slack-disconnect");
+const slackFeedback = document.getElementById("slack-feedback");
 
 async function fetchJSON(url, options = {}) {
   const response = await fetch(url, options);
@@ -42,6 +46,93 @@ function stopPolling() {
   if (state.poll) {
     clearInterval(state.poll);
     state.poll = null;
+  }
+}
+
+function setSlackFeedback(message, tone = "") {
+  if (!slackFeedback) return;
+  slackFeedback.textContent = message;
+  slackFeedback.classList.remove("success", "error");
+  if (tone) {
+    slackFeedback.classList.add(tone);
+  }
+}
+
+function applySlackStatus(slack) {
+  if (!slackFeedback || !slackDisconnectButton) return;
+  if (!slack) {
+    setSlackFeedback("Slack is not connected.");
+    slackDisconnectButton.disabled = true;
+    return;
+  }
+  const parts = [];
+  if (slack.connected) {
+    parts.push("Slack connected");
+    if (slack.webhook_mask) {
+      parts.push(`(${slack.webhook_mask})`);
+    }
+  } else {
+    parts.push("Slack is not connected.");
+  }
+  if (slack.last_tested) {
+    const stamp = new Date(slack.last_tested);
+    if (!Number.isNaN(stamp.valueOf())) {
+      parts.push(`Last tested ${stamp.toLocaleString()}.`);
+    }
+  }
+  if (slack.last_error) {
+    parts.push(`Last error: ${slack.last_error}`);
+    setSlackFeedback(parts.join(" "), "error");
+  } else if (slack.connected) {
+    setSlackFeedback(parts.join(" "), "success");
+  } else {
+    setSlackFeedback(parts.join(" "));
+  }
+  slackDisconnectButton.disabled = !slack.connected;
+}
+
+async function loadSlackStatus() {
+  if (!slackForm) return;
+  try {
+    const data = await fetchJSON("/api/integrations/slack");
+    applySlackStatus(data.slack);
+  } catch (err) {
+    setSlackFeedback(err.message || "Unable to load Slack status.", "error");
+  }
+}
+
+async function handleSlackSubmit(event) {
+  event.preventDefault();
+  if (!slackInput) return;
+  const url = slackInput.value.trim();
+  if (!url) {
+    setSlackFeedback("Enter a Slack webhook URL.", "error");
+    return;
+  }
+  setSlackFeedback("Connecting to Slack...");
+  try {
+    const data = await fetchJSON("/api/integrations/slack", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ webhook_url: url, test: true }),
+    });
+    slackInput.value = "";
+    applySlackStatus(data.slack);
+    setSlackFeedback(data.message || "Slack webhook saved.", "success");
+  } catch (err) {
+    setSlackFeedback(err.message || "Unable to connect to Slack.", "error");
+  }
+}
+
+async function handleSlackDisconnect() {
+  if (!slackForm) return;
+  setSlackFeedback("Disconnecting Slack...");
+  try {
+    const data = await fetchJSON("/api/integrations/slack", { method: "DELETE" });
+    applySlackStatus(data.slack);
+    setSlackFeedback(data.message || "Slack disconnected.");
+  } catch (err) {
+    setSlackFeedback(err.message || "Unable to disconnect Slack.", "error");
   }
 }
 
@@ -328,5 +419,11 @@ trimFirstButton.addEventListener("click", handleTrimFirst);
 trimLastButton.addEventListener("click", handleTrimLast);
 trimRangeButton.addEventListener("click", handleTrimRange);
 splitClipButton.addEventListener("click", handleSplitClip);
+
+if (slackForm) {
+  slackForm.addEventListener("submit", handleSlackSubmit);
+  slackDisconnectButton?.addEventListener("click", handleSlackDisconnect);
+  loadSlackStatus();
+}
 
 refreshProjects();

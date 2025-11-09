@@ -9,6 +9,7 @@ LuminaCut AI is an autonomous, natural-language-driven video editing environment
 - **Instant preview refresh** – previews mirror the current clip and are regenerated after each instruction for rapid feedback.
 - **Operation timeline** – transparent list of every AI-authored transformation with human-friendly descriptions.
 - **Classic quick tools** – dedicated buttons for trimming the head or tail, isolating a range, or splitting at a timecode.
+- **Slack notifications** – optional webhook integration to broadcast project updates to your team automatically.
 - **Zero-install dependencies** – everything runs on the Python standard library, making it ideal for offline or firewalled environments.
 
 ## Project structure
@@ -41,6 +42,15 @@ python -m backend.server --host 0.0.0.0 --port 8000
 ```
 
 Open `http://localhost:8000` in your browser to access the UI. Uploaded files, project metadata, previews, and exports are stored under `backend/data/`.
+
+### Optional Slack integration
+
+Provide an incoming webhook URL to mirror LuminaCut activity into a Slack channel. You can either:
+
+- Set the `SLACK_WEBHOOK_URL` environment variable before launching the server, **or**
+- Use the **Slack integration** card in the UI to paste the webhook URL and run a connection test.
+
+When connected, LuminaCut posts notifications for new uploads, instruction completions or failures, and exports.
 
 ## Example workflow
 

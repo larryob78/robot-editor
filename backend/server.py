@@ -14,6 +14,7 @@ from typing import Any, Dict, Tuple
 from urllib.parse import parse_qs, urlparse
 
 from .models import ExportRequest, InstructionRequest
+from .notifications import clear_slack, configure_slack, slack_status, test_slack_webhook
 from .state import manager
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -132,6 +133,9 @@ class LuminaCutHandler(BaseHTTPRequestHandler):
             return
 
         parts = self._split_path()
+        if parts[:3] == ("api", "integrations", "slack") and len(parts) == 3:
+            self._write_json({"slack": slack_status()})
+            return
         if parts[:2] == ("api", "projects") and len(parts) == 2:
             projects = manager.list_projects()
             payload = {"projects": [_serialize_project(project) for project in projects]}
@@ -179,6 +183,32 @@ class LuminaCutHandler(BaseHTTPRequestHandler):
     # ------------------------------------------------------------------
     def do_POST(self) -> None:  # noqa: N802 - stdlib signature
         parts = self._split_path()
+
+        if parts[:3] == ("api", "integrations", "slack") and len(parts) == 3:
+            try:
+                data = self._parse_json_body()
+            except json.JSONDecodeError:
+                return
+            action = data.get("action")
+            if action == "test" and not data.get("webhook_url"):
+                ok, message = test_slack_webhook()
+                payload = {"slack": slack_status(), "message": message}
+                status = HTTPStatus.OK if ok else HTTPStatus.BAD_REQUEST
+                self._write_json(payload, status=status)
+                return
+            webhook_url = data.get("webhook_url")
+            if not webhook_url:
+                self.send_error(HTTPStatus.BAD_REQUEST, "webhook_url required")
+                return
+            test_flag = bool(data.get("test", True))
+            try:
+                message = configure_slack(str(webhook_url), test=test_flag)
+            except ValueError as exc:
+                self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
+                return
+            payload = {"slack": slack_status(), "message": message}
+            self._write_json(payload)
+            return
 
         if parts[:2] == ("api", "projects") and len(parts) == 2:
             ctype, _ = cgi.parse_header(self.headers.get("Content-Type", ""))
@@ -240,6 +270,12 @@ class LuminaCutHandler(BaseHTTPRequestHandler):
                 self.send_error(HTTPStatus.NOT_FOUND, "Project not found")
                 return
             self._serve_file(target)
+            return
+
+        if parts[:3] == ("api", "integrations", "slack") and len(parts) == 3:
+            clear_slack()
+            payload = {"slack": slack_status(), "message": "Slack integration disconnected."}
+            self._write_json(payload)
             return
 
         self.send_error(HTTPStatus.NOT_FOUND, "Unknown endpoint")

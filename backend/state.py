@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from .models import ExportRequest, InstructionRequest
+from .notifications import notify_slack_async
 from .video_processing import VideoProject, parse_instructions, save_metadata
 
 
@@ -43,6 +44,7 @@ class ProjectManager:
         with self.lock:
             self.projects[project_id] = project
             save_metadata(project)
+        notify_slack_async(f"New LuminaCut project '{project.name}' uploaded.")
         return project
 
     def list_projects(self) -> List[VideoProject]:
@@ -82,6 +84,12 @@ class ProjectManager:
                         job["status"] = "completed"
                         job["error"] = None
                     save_metadata(project)
+                op_count = len(operations)
+                notify_slack_async(
+                    "✅ LuminaCut applied instruction '"
+                    f"{request.prompt}' to project '{project.name}'. "
+                    f"Recorded {op_count} operation{'s' if op_count != 1 else ''}."
+                )
             except Exception as exc:  # pragma: no cover - defensive branch
                 with self.lock:
                     project.status = "error"
@@ -89,6 +97,10 @@ class ProjectManager:
                     if job:
                         job["status"] = "failed"
                         job["error"] = str(exc)
+                notify_slack_async(
+                    "⚠️ LuminaCut failed to apply instruction '"
+                    f"{request.prompt}' to project '{project.name}': {exc}"
+                )
 
         self.executor.submit(task)
         return {"job_id": job_id}
@@ -107,6 +119,9 @@ class ProjectManager:
         target_path = export_dir / file_name
         project.export(target_path, request.format)
         save_metadata(project)
+        notify_slack_async(
+            f"📤 LuminaCut exported project '{project.name}' as {request.format.upper()}."
+        )
         return target_path
 
 

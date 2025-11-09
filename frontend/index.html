@@ -34,6 +34,30 @@
         <ul id="projects-list" class="projects"></ul>
       </section>
 
+      <section class="card" id="slack-card">
+        <h2>Slack integration</h2>
+        <p class="hint">
+          Connect a Slack incoming webhook to receive notifications from LuminaCut whenever
+          projects update, exports finish, or instructions fail.
+        </p>
+        <form id="slack-form" class="slack-form">
+          <label class="field">
+            <span>Webhook URL</span>
+            <input
+              type="url"
+              id="slack-webhook"
+              name="webhook"
+              placeholder="https://hooks.slack.com/services/..."
+            />
+          </label>
+          <div class="toolbar">
+            <button type="submit">Save &amp; test</button>
+            <button type="button" id="slack-disconnect" class="secondary">Disconnect</button>
+          </div>
+          <p class="hint" id="slack-feedback">Slack is not connected.</p>
+        </form>
+      </section>
+
       <section class="card" id="editor-card">
         <h2 id="editor-title">Editor</h2>
         <div class="editor-grid">
