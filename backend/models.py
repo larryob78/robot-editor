@@ -31,14 +31,18 @@ class ProjectModel:
 class InstructionRequest:
     prompt: str
     preview: bool = True
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]) -> "InstructionRequest":
         prompt = str(data.get("prompt", "")).strip()
         preview = bool(data.get("preview", True))
+        metadata = data.get("metadata", {}) or {}
+        if not isinstance(metadata, dict):
+            raise ValueError("metadata must be an object if provided")
         if not prompt:
             raise ValueError("Instruction prompt cannot be empty")
-        return cls(prompt=prompt, preview=preview)
+        return cls(prompt=prompt, preview=preview, metadata=metadata)
 
 
 @dataclass

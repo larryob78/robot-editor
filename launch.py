@@ -55,6 +55,8 @@ def install_backend_deps(python_bin: Path) -> None:
 def start_backend(backend_python: Path, *, backend_port: int, host: str) -> None:
     env = os.environ.copy()
     env["PATH"] = str(backend_python.parent) + os.pathsep + env.get("PATH", "")
+    if "OPENAI_API_KEY" not in env:
+        print("WARNING: OPENAI_API_KEY is not set. AI planning requests will fail until you configure it.")
     cmd = [
         str(backend_python),
         "-m",

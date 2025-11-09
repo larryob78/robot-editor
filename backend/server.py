@@ -6,6 +6,7 @@ import argparse
 import cgi
 import json
 import mimetypes
+import os
 import shutil
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -245,6 +246,9 @@ class LuminaCutHandler(BaseHTTPRequestHandler):
                 request = InstructionRequest.from_json(data)
             except Exception as exc:  # pragma: no cover - defensive
                 self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
+                return
+            if not os.getenv("OPENAI_API_KEY"):
+                self.send_error(HTTPStatus.BAD_GATEWAY, "OPENAI_API_KEY is not configured on the server")
                 return
             try:
                 job = manager.submit_instruction(project_id, request)

@@ -1,1 +1,1 @@
-# LuminaCut backend relies solely on Python's standard library in this build.
+openai>=0.28.0

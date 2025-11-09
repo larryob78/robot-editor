@@ -267,10 +267,22 @@ async function sendInstructionPrompt(prompt, preview) {
     setStatus("Select a project first.");
     return;
   }
+  const project = state.projects.find((p) => p.id === state.selectedId);
+  const metadataPayload = project?.metadata
+    ? {
+        duration: project.metadata.duration,
+        width: project.metadata.width,
+        height: project.metadata.height,
+        fps: project.metadata.fps,
+      }
+    : undefined;
   const payload = {
     prompt,
     preview: typeof preview === "boolean" ? preview : previewToggle.checked,
   };
+  if (metadataPayload) {
+    payload.metadata = metadataPayload;
+  }
   setStatus("Submitting instruction...");
   try {
     const response = await fetchJSON(`/api/projects/${state.selectedId}/instructions`, {

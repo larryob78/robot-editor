@@ -8,21 +8,10 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from .ai import plan_edits
 from .models import ExportRequest, InstructionRequest
 from .notifications import notify_slack_async
-from .video_processing import VideoProject, parse_instructions, save_metadata
-
-
-def _duration(_path: Path) -> Optional[float]:
-    """Return a cached duration if available.
-
-    Real media inspection would normally read metadata via a video library, but
-    in this offline-friendly build we simply return ``None``. The instruction
-    parser gracefully handles the ``None`` case by using prompts without timing
-    hints.
-    """
-
-    return None
+from .video_processing import Operation, VideoProject, save_metadata
 
 
 class ProjectManager:
@@ -66,8 +55,6 @@ class ProjectManager:
             self.jobs[job_id] = {"status": "queued", "prompt": request.prompt, "error": None}
             project.status = "queued"
 
-        clip_duration = _duration(project.current_path)
-
         def task() -> None:
             with self.lock:
                 job = self.jobs.get(job_id)
@@ -75,7 +62,15 @@ class ProjectManager:
                     job["status"] = "processing"
                 project.status = "processing"
             try:
-                operations = parse_instructions(request.prompt, clip_duration)
+                metadata_payload = {
+                    "duration": project.metadata.get("duration"),
+                    "width": project.metadata.get("width"),
+                    "height": project.metadata.get("height"),
+                    "fps": project.metadata.get("fps"),
+                }
+                metadata_payload.update(request.metadata)
+                planned_operations = plan_edits(request.prompt, metadata_payload)
+                operations = [Operation.from_mapping(item) for item in planned_operations]
                 project.apply_operations(operations, generate_preview=request.preview)
                 with self.lock:
                     project.status = "ready"
@@ -85,11 +80,17 @@ class ProjectManager:
                         job["error"] = None
                     save_metadata(project)
                 op_count = len(operations)
-                notify_slack_async(
-                    "✅ LuminaCut applied instruction '"
-                    f"{request.prompt}' to project '{project.name}'. "
-                    f"Recorded {op_count} operation{'s' if op_count != 1 else ''}."
-                )
+                if op_count:
+                    notify_slack_async(
+                        "✅ LuminaCut applied instruction '",
+                        f"{request.prompt}' to project '{project.name}'. ",
+                        f"Recorded {op_count} operation{'s' if op_count != 1 else ''}.",
+                    )
+                else:
+                    notify_slack_async(
+                        "ℹ️ LuminaCut received instruction '",
+                        f"{request.prompt}' for project '{project.name}', but no supported edits were generated.",
+                    )
             except Exception as exc:  # pragma: no cover - defensive branch
                 with self.lock:
                     project.status = "error"
@@ -98,7 +99,7 @@ class ProjectManager:
                         job["status"] = "failed"
                         job["error"] = str(exc)
                 notify_slack_async(
-                    "⚠️ LuminaCut failed to apply instruction '"
+                    "⚠️ LuminaCut failed to apply instruction '",
                     f"{request.prompt}' to project '{project.name}': {exc}"
                 )
 

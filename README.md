@@ -1,16 +1,16 @@
 # LuminaCut AI
 
-LuminaCut AI is an autonomous, natural-language-driven video editing environment. Upload footage, describe your edits in plain English, and review the simulated changes instantly – all without third-party Python packages. The backend is a lightweight HTTP server powered by the Python standard library, and the frontend is a static HTML/CSS/JS experience served from the same process.
+LuminaCut AI is an autonomous, natural-language-driven video editing environment. Upload footage, describe your edits in plain English, and let the backend orchestrate OpenAI-powered edit plans that are executed with real `ffmpeg` transformations. The backend exposes a lightweight HTTP API and serves the static HTML/CSS/JS client from the same process.
 
 ## Features
 
-- **Agentic natural language editing** – heuristically interprets prompts (trim, speed, brightness, volume, highlight) and records the resulting operations.
-- **Format-agnostic ingest & export** – accepts any browser-supported video upload and returns the untouched source as MP4 or MOV exports.
+- **Agentic OpenAI planning** – forwards every instruction (plus clip metadata) to the OpenAI API to obtain structured edit steps.
+- **Real ffmpeg operations** – trim, split, brightness, volume, and speed adjustments are applied using `ffmpeg` so previews reflect the actual output.
+- **Format-agnostic ingest & export** – accepts any browser-supported video upload and re-encodes to MP4 or MOV.
 - **Instant preview refresh** – previews mirror the current clip and are regenerated after each instruction for rapid feedback.
 - **Operation timeline** – transparent list of every AI-authored transformation with human-friendly descriptions.
 - **Classic quick tools** – dedicated buttons for trimming the head or tail, isolating a range, or splitting at a timecode.
 - **Slack notifications** – optional webhook integration to broadcast project updates to your team automatically.
-- **Zero-install dependencies** – everything runs on the Python standard library, making it ideal for offline or firewalled environments.
 
 ## Project structure
 
@@ -32,6 +32,18 @@ python launch.py
 
 By default the server binds to `0.0.0.0:8000`. Pass `--host` or `--backend-port` to customise the bind address, or `--skip-install` if you do not want the script to run `pip install -r backend/requirements.txt`.
 
+> **Important:** LuminaCut requires the `OPENAI_API_KEY` environment variable at runtime. Export the key before launching:
+> 
+> ```bash
+> export OPENAI_API_KEY=sk-...
+> python launch.py
+> ```
+> 
+> Optional overrides:
+> 
+> - `LUMINACUT_MODEL` – override the default `gpt-4o-mini` planning model.
+> - `FFMPEG_BIN` / `FFPROBE_BIN` – point to custom ffmpeg binaries if they are not on `PATH`.
+
 ### Manual launch
 
 ```bash
@@ -42,6 +54,8 @@ python -m backend.server --host 0.0.0.0 --port 8000
 ```
 
 Open `http://localhost:8000` in your browser to access the UI. Uploaded files, project metadata, previews, and exports are stored under `backend/data/`.
+
+Ensure `ffmpeg`/`ffprobe` are available on your system `PATH`. Most package managers (`brew install ffmpeg`, `apt install ffmpeg`, etc.) provide them.
 
 ### Optional Slack integration
 
@@ -62,5 +76,5 @@ When connected, LuminaCut posts notifications for new uploads, instruction compl
 
 ## Notes
 
-- The offline build simulates edits by recording operations and refreshing previews/exports. Extend `backend/video_processing.py` to integrate real processing libraries if you have external dependencies available.
-- Projects are stored on disk inside `backend/data/projects/`. Remove the folder to reset the environment.
+- LuminaCut stores projects on disk inside `backend/data/projects/`. Remove the folder to reset the environment.
+- Slack notifications are optional; leave the webhook unset if you do not wish to broadcast events.
