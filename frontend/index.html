@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LuminaCut AI</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <h1>LuminaCut AI</h1>
+      <p>Edit videos with natural language instructions in a fully offline-friendly stack.</p>
+    </header>
+
+    <main class="layout">
+      <section class="card" id="upload-card">
+        <h2>New Project</h2>
+        <form id="upload-form">
+          <label class="field">
+            <span>Project name</span>
+            <input type="text" name="name" placeholder="Untitled Project" />
+          </label>
+          <label class="field">
+            <span>Video file</span>
+            <input type="file" name="file" accept="video/*" required />
+          </label>
+          <button type="submit">Upload</button>
+        </form>
+        <p class="hint">Supported formats depend on your browser since processing is simulated.</p>
+      </section>
+
+      <section class="card" id="projects-card">
+        <h2>Projects</h2>
+        <ul id="projects-list" class="projects"></ul>
+      </section>
+
+      <section class="card" id="slack-card">
+        <h2>Slack integration</h2>
+        <p class="hint">
+          Connect a Slack incoming webhook to receive notifications from LuminaCut whenever
+          projects update, exports finish, or instructions fail.
+        </p>
+        <form id="slack-form" class="slack-form">
+          <label class="field">
+            <span>Webhook URL</span>
+            <input
+              type="url"
+              id="slack-webhook"
+              name="webhook"
+              placeholder="https://hooks.slack.com/services/..."
+            />
+          </label>
+          <div class="toolbar">
+            <button type="submit">Save &amp; test</button>
+            <button type="button" id="slack-disconnect" class="secondary">Disconnect</button>
+          </div>
+          <p class="hint" id="slack-feedback">Slack is not connected.</p>
+        </form>
+      </section>
+
+      <section class="card" id="editor-card">
+        <h2 id="editor-title">Editor</h2>
+        <div class="editor-grid">
+          <div>
+            <video id="preview" controls class="preview" preload="metadata"></video>
+            <div class="toolbar">
+              <button id="refresh-preview" type="button" disabled>Refresh preview</button>
+              <button id="export-mp4" type="button" disabled>Export MP4</button>
+              <button id="export-mov" type="button" disabled>Export MOV</button>
+            </div>
+          </div>
+          <div>
+            <section class="quick-actions">
+              <h3>Classic edits</h3>
+              <div class="quick-grid">
+                <button id="trim-first" type="button" disabled>Trim to first…</button>
+                <button id="trim-last" type="button" disabled>Trim to last…</button>
+                <button id="trim-range" type="button" disabled>Trim range…</button>
+                <button id="split-clip" type="button" disabled>Split clip…</button>
+              </div>
+            </section>
+            <label class="field">
+              <span>Instruction</span>
+              <textarea id="instruction-input" rows="5" placeholder="Describe how to edit the video..."></textarea>
+            </label>
+            <label class="inline">
+              <input type="checkbox" id="preview-toggle" checked />
+              <span>Generate preview after applying instruction</span>
+            </label>
+            <button id="apply-instruction" type="button" disabled>Apply instruction</button>
+            <div id="status" class="status"></div>
+            <h3>Operation history</h3>
+            <ul id="operations" class="operations"></ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <template id="project-item-template">
+      <li class="project">
+        <button data-action="select" type="button"></button>
+        <span class="status-pill"></span>
+      </li>
+    </template>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
