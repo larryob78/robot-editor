@@ -1,0 +1,281 @@
+%PDF-1.4
+%
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2954 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+(# AI Film Production Acceleration Plan) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(A concise, end-to-end blueprint to accelerate AI film production from brief to deliverables.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 1. Capture and organize project briefs efficiently) Tj
+0 -16 Td
+(- **Design structured brief intake**) Tj
+0 -16 Td
+(  - Build a form \(web or CLI\) capturing logline, genre, tone, target audience, runtime,) Tj
+0 -16 Td
+(constraints \(voice type, stock limits\), and delivery specs.) Tj
+0 -16 Td
+(  - Store briefs as versioned JSON/YAML documents with unique project IDs.) Tj
+0 -16 Td
+(  - Add validation \(required fields, length limits\) and templates for common genres \(ad,) Tj
+0 -16 Td
+(explainer, short film\).) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 2. Convert brief into high-level concept and beat outline) Tj
+0 -16 Td
+(- **Automate concept and beat-sheet generation**) Tj
+0 -16 Td
+(  - Prompt an LLM with the brief JSON plus few-shot examples to produce premise, theme, visual) Tj
+0 -16 Td
+(motif, and 8–12 beats.) Tj
+0 -16 Td
+(  - Enforce schema via JSON output \(beats with description, visual idea, duration, emotional) Tj
+0 -16 Td
+(tone\).) Tj
+0 -16 Td
+(  - Add a “regenerate by section” control so users can reroll specific beats without losing the) Tj
+0 -16 Td
+(rest.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 3. Produce full script with dialog and stage directions) Tj
+0 -16 Td
+(- **Script generation workflow**) Tj
+0 -16 Td
+(  - Feed beats into an LLM prompt to expand into a script \(sluglines, action, dialog\) using a) Tj
+0 -16 Td
+(screenplay format \(e.g., Fountain/Final Draft–like plain text\).) Tj
+0 -16 Td
+(  - Include controls for pacing \(target runtime per scene\), reading level, and brand/legal) Tj
+0 -16 Td
+(constraints \(no trademarks, safe content\).) Tj
+0 -16 Td
+(  - Store script revisions with diff/compare view and per-scene regenerate.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 4. Turn script into storyboard frames) Tj
+0 -16 Td
+(- **Storyboard frame extraction**) Tj
+0 -16 Td
+(  - Parse script into scenes and shots; extract characters, location, time of day, and camera) Tj
+0 -16 Td
+(notes \(heuristics or LLM extraction\).) Tj
+0 -16 Td
+(  - Generate shot cards \(JSON\) containing shot type, composition, lens, movement, lighting,) Tj
+0 -16 Td
+(mood, and key props.) Tj
+0 -16 Td
+(  - Render to a visual storyboard \(static HTML/PDF\) and allow manual edits per card.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 5. Generate image prompts for each shot) Tj
+0 -16 Td
+(- **Image prompt builder**) Tj
+0 -16 Td
+(  - Map shot card fields to prompt templates \(e.g., `${style} ${lens} ${lighting}) Tj
+0 -16 Td
+(${composition} of ${subject} at ${location}`\).) Tj
+0 -16 Td
+(  - Support multiple target models \(SDXL, Midjourney, DALL·E\) with style presets and negative) Tj
+0 -16 Td
+(prompts.) Tj
+0 -16 Td
+(  - Add safety filters \(ban lists\) and aspect-ratio selection tied to delivery format \(9:16,) Tj
+0 -16 Td
+(16:9, 1:1\).) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 2911 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+() Tj
+0 -16 Td
+(## 6. Create voiceover and timing guides) Tj
+0 -16 Td
+(- **Voiceover + timing pass**) Tj
+0 -16 Td
+(  - Use TTS to generate scratch VO from script and capture timestamps.) Tj
+0 -16 Td
+(  - Derive timing marks per line/beat; export as SRT/VTT for alignment with visuals.) Tj
+0 -16 Td
+(  - Allow alt takes \(speed/pitch\) and a timing adjustment slider to nudge cues earlier or) Tj
+0 -16 Td
+(later.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 7. Auto-generate video assembly prompts and edits) Tj
+0 -16 Td
+(- **Rough-cut assembly**) Tj
+0 -16 Td
+(  - Combine storyboard images \(or generated stills\), VO, and music bed into a rough cut via an) Tj
+0 -16 Td
+(ffmpeg pipeline; auto-fit durations to VO timing.) Tj
+0 -16 Td
+(  - Generate LLM-assisted edit lists \(EDL\) describing transitions, overlays, and motion) Tj
+0 -16 Td
+(\(pan/zoom\) and render a draft MP4.) Tj
+0 -16 Td
+(  - Export a structured edit timeline \(e.g., OpenTimelineIO/EDL/JSON\) for NLE import) Tj
+0 -16 Td
+(\(Premiere/Resolve\).) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 8. Graphics and on-screen text generation) Tj
+0 -16 Td
+(- **Graphics/text automation**) Tj
+0 -16 Td
+(  - Extract lower-third, supers, captions, and CTA requirements from script/brief.) Tj
+0 -16 Td
+(  - Generate styled SVG/PNG assets using brand palettes and typography presets.) Tj
+0 -16 Td
+(  - Place overlays onto the timeline JSON with in/out points and safe-title margins.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 9. Feedback loop and versioning) Tj
+0 -16 Td
+(- **Review and iteration tools**) Tj
+0 -16 Td
+(  - Provide per-stage checkpoints \(brief → beats → script → storyboard → prompts → rough cut\)) Tj
+0 -16 Td
+(with approvals.) Tj
+0 -16 Td
+(  - Track versions with tags and change logs; allow “fork” to explore alternates.) Tj
+0 -16 Td
+(  - Add inline commenting on frames/shots and regenerate buttons scoped to the commented item.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 10. Delivery and export) Tj
+0 -16 Td
+(- **Packaging outputs**) Tj
+0 -16 Td
+(  - Export bundles: script \(PDF/Markdown\), storyboard \(PDF/HTML\), prompt pack \(CSV/JSON\), VO) Tj
+0 -16 Td
+(\(WAV\), EDL/OTIO, and draft video \(MP4\).) Tj
+0 -16 Td
+(  - Include a manifest JSON summarizing assets, durations, and model settings used.) Tj
+0 -16 Td
+(  - Add a publish step to upload to storage \(S3/GCS\) with shareable links.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 11. Tech stack and infrastructure) Tj
+0 -16 Td
+(- **Stack selection and scaffolding**) Tj
+0 -16 Td
+(  - Choose a web stack \(e.g., Next.js/TypeScript\) or CLI \(Python\) plus a backend service) Tj
+0 -16 Td
+(\(FastAPI/Node\) for orchestration.) Tj
+0 -16 Td
+(  - Add worker queue for long-running tasks \(Celery/RQ/BullMQ\) and object storage for assets.) Tj
+0 -16 Td
+(  - Wrap LLM/image/voice calls with provider abstractions to swap models easily; log) Tj
+0 -16 Td
+(prompts/responses for traceability.) Tj
+0 -16 Td
+() Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 1335 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+(## 12. Safety, compliance, and guardrails) Tj
+0 -16 Td
+(- **Guardrails and safety checks**) Tj
+0 -16 Td
+(  - Pre-filter briefs and prompts for disallowed content; enforce negative prompts and) Tj
+0 -16 Td
+(trademark filtering.) Tj
+0 -16 Td
+(  - Add per-output checks: hallucination guard on facts, NSFW detectors on images, and) Tj
+0 -16 Td
+(profanity checks on VO/scripts.) Tj
+0 -16 Td
+(  - Keep an audit log of model calls and user overrides.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 13. UX considerations) Tj
+0 -16 Td
+(- **User flow design**) Tj
+0 -16 Td
+(  - Create a wizard-like flow with save/resume and progress indicators for each stage.) Tj
+0 -16 Td
+(  - Provide inline preview of generated frames, VO playback, and edit timeline scrubber.) Tj
+0 -16 Td
+(  - Offer smart defaults and a “one-click draft” that runs the entire chain, then surfaces) Tj
+0 -16 Td
+(sections to refine.) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(## 14. Evaluation and quality) Tj
+0 -16 Td
+(- **Quality scoring and A/B tests**) Tj
+0 -16 Td
+(  - Add rubric scoring \(story clarity, pacing, visual coherence\) via LLM and simple heuristics.) Tj
+0 -16 Td
+(  - Allow A/B generations \(two styles/cuts\) and collect user preference feedback.) Tj
+0 -16 Td
+(  - Track metrics such as turnaround time, regenerate rate per step, and export success.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Contents 2 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Contents 3 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+8 0 obj
+<< /Type /Pages /Kids [5 0 R 6 0 R 7 0 R] /Count 3 >>
+endobj
+9 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000003091 00000 n 
+0000006054 00000 n 
+0000007441 00000 n 
+0000007567 00000 n 
+0000007693 00000 n 
+0000007819 00000 n 
+0000007888 00000 n 
+trailer
+<< /Size 10 /Root 9 0 R >>
+startxref
+7937
+%%EOF
